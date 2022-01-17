@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"database/sql"
@@ -8,13 +8,17 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func init() {
+
+}
+
 type Event struct {
 	Id   int
 	Name string
 	Year int
 }
 
-func dbConn() (db *sql.DB) {
+func Connect() (db *sql.DB) {
 	db, err := sql.Open("sqlite3", "./data.db")
 	if err != nil {
 		log.Fatal(err)
@@ -23,14 +27,14 @@ func dbConn() (db *sql.DB) {
 	return db
 }
 
-func dropTable(db *sql.DB) error {
+func DropTable(db *sql.DB) error {
 	query := `DROP TABLE IF EXISTS  event;`
 
 	_, err := db.Exec(query)
 	return err
 }
 
-func createTable(db *sql.DB) error {
+func CreateTable(db *sql.DB) error {
 	query := `
     CREATE TABLE IF NOT EXISTS event(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +49,7 @@ func createTable(db *sql.DB) error {
 	return err
 }
 
-func insertEvent(db *sql.DB, e Event) (res sql.Result, err error) {
+func InsertEvent(db *sql.DB, e Event) (res sql.Result, err error) {
 	query := fmt.Sprintf("INSERT INTO event (name, year) VALUES (\"%v\", %v)", e.Name, e.Year)
 
 	res, err = db.Exec(query)
@@ -56,7 +60,7 @@ func insertEvent(db *sql.DB, e Event) (res sql.Result, err error) {
 	return
 }
 
-func getEvent(db *sql.DB, id int) (e Event, err error) {
+func GetEvent(db *sql.DB, id int) (e Event, err error) {
 	query := fmt.Sprintf("SELECT * FROM event WHERE id = %v", id)
 	rows, err := db.Query(query)
 	if err != nil {
@@ -73,7 +77,7 @@ func getEvent(db *sql.DB, id int) (e Event, err error) {
 	return
 }
 
-func getEvents(db *sql.DB) (events []Event, err error) {
+func GetEvents(db *sql.DB) (events []Event, err error) {
 	query := "SELECT * FROM event"
 
 	rows, err := db.Query(query)
@@ -95,7 +99,7 @@ func getEvents(db *sql.DB) (events []Event, err error) {
 	return
 }
 
-func updateEvent(db *sql.DB, e Event) (res sql.Result, err error) {
+func UpdateEvent(db *sql.DB, e Event) (res sql.Result, err error) {
 	query := fmt.Sprintf("UPDATE event SET name = \"%v\", year = %v WHERE id = %v", e.Name, e.Year, e.Id)
 
 	res, err = db.Exec(query)
@@ -105,7 +109,7 @@ func updateEvent(db *sql.DB, e Event) (res sql.Result, err error) {
 	return res, err
 }
 
-func deleteEvent(db *sql.DB, id int) (res sql.Result, err error) {
+func DeleteEvent(db *sql.DB, id int) (res sql.Result, err error) {
 	query := fmt.Sprintf("DELETE FROM event WHERE id = %v", id)
 	res, err = db.Exec(query)
 	if err != nil {
@@ -113,17 +117,4 @@ func deleteEvent(db *sql.DB, id int) (res sql.Result, err error) {
 		return
 	}
 	return
-}
-
-func main() {
-	// db := dbConn()
-	// dropTable(db)
-	// createTable(db)
-	// e := Event{Name: "cccccccc", Year: 2021}
-	// res, err := insertEvent(db, e)
-	// fmt.Println(res, err)
-
-	// res2, _ := deleteEvent(db, 3)
-	// fmt.Println(res2)
-	// db.Close()
 }
